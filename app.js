@@ -8,6 +8,7 @@ const stateObj = {
 
 //Need to add item
 function addItem(state, item) {
+  validate(state, item);
   state.items.push({title: item, checked: false});
 }
 
@@ -35,6 +36,23 @@ function deleteItem (state, item){
   });
 }
 
+function editItem(state, prevItem, newItem){
+  validate(state, item);
+  state.items.forEach(obj => {
+    if (obj.title === prevItem){
+      obj.title = newItem;
+    }
+  });
+}
+
+function validate(state, item){
+  state.items.forEach(obj => {
+    if (obj.title === item){
+      alert(`${item} is already on your list!`);
+      return
+    }
+  });
+}
 
 // 3. State rendering functions. Write some code that renders your state into a DOM element. The function will take in the state object and the element you want to update, then it will format your user input, and push it onto the dom element.
 
@@ -50,7 +68,13 @@ function render (state, element){
     }
     itemsHtml += `
       <li>
-        <span class="${css}">${obj.title}</span>
+        <span class="${css} js-title">${obj.title}</span>
+        <form class="hidden js-editItem">
+          <input type="text" name="Edit Name" class="js-input-edit-item" placeholder="New item name here">
+          <button class="shopping-item-edit">
+            <span class="button-label">edit</span>
+          </button>
+        </form>
         <div class="shopping-item-controls">
           <button class="shopping-item-toggle">
             <span class="button-label">check</span>
@@ -73,17 +97,35 @@ $("#js-shopping-list-form").submit(function(event) {
   event.preventDefault();
   addItem(stateObj, $('#shopping-list-entry').val());
   render(stateObj, $('.shopping-list'));
+  $('#shopping-list-entry').val("");
 });
 
 $('.shopping-list').on('click', '.shopping-item-toggle', function(event) {
-  let itemName = $(this).parent().siblings().text(); 
+  let itemName = $(this).closest('li').find('.js-title').text(); 
   checkItem(stateObj, itemName);
   render(stateObj, $('.shopping-list'));
 });
 
 $('.shopping-list').on('click', '.shopping-item-delete', function(event) {
-  let itemName = $(this).parent().siblings().text();
+  let itemName = $(this).closest('li').find('.js-title').text();
   deleteItem(stateObj, itemName);
+  render(stateObj, $('.shopping-list'));
+});
+
+// SHOW THE EDIT FIELD
+$('.shopping-list').on('click', '.shopping-item', function(event){
+  $(this).addClass('hidden');
+  $(this).siblings().removeClass('hidden');
+})
+
+// SUBMIT THE EDIT
+$('.shopping-list').on('submit', '.js-editItem', function(event){
+  event.preventDefault();
+  let prevItem = $(this).prev().text();
+  let newItem = $(this).find('input').val()
+  // console.log($(this).find('input').val());
+  editItem(stateObj, prevItem, newItem);
+  // console.log(stateObj);
   render(stateObj, $('.shopping-list'));
 });
 
