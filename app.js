@@ -1,10 +1,7 @@
 // 1. Design a state object. This is an object that will store the data that will eventually make its way to your application
 
 const stateObj = {
-  items: [
-    {title: 'pineapples', checked: false},
-    {title: 'apples', checked: false}
-  ]
+  items: []
 };
 
 // 2. State modification Functions. Write some code that will modify your state object. Don't hard-code in any event listeners or specific data, just create a generic function that takes in the state object and a piece of data as arguments, and modifies the state with that piece of data.
@@ -44,15 +41,16 @@ function deleteItem (state, item){
 function render (state, element){
   let itemsHtml = ``;
   state.items.forEach(obj => {
-    // if (obj.checked === true){
-    //   let css = 'shopping-item shopping-item__checked';
-    // }
-    // else if (obj.checked === false){
-    //   let css = 'shopping-item';
-    // }
+    let css = '';
+    if (obj.checked === true){
+      css = 'shopping-item shopping-item__checked';
+    }
+    else if (obj.checked === false){
+      css = 'shopping-item';
+    }
     itemsHtml += `
       <li>
-        <span class="CLASS HERE">${obj.title}</span>
+        <span class="${css}">${obj.title}</span>
         <div class="shopping-item-controls">
           <button class="shopping-item-toggle">
             <span class="button-label">check</span>
@@ -64,9 +62,29 @@ function render (state, element){
       </li>
     `
   });
+//   console.log(itemsHtml);
+  element.html(itemsHtml);
 }
 
-render (stateObj);
-console.log(itemsHtml);
 
 // 4. Event listeners. This is where the magic happens. based on whatever user interaction you're expecting, call on your modification function with their input, then call on your rendering function with the elemnt you want to update.
+
+$("#js-shopping-list-form").submit(function(event) {
+  event.preventDefault();
+  addItem(stateObj, $('#shopping-list-entry').val());
+  render(stateObj, $('.shopping-list'));
+});
+
+$('.shopping-list').on('click', '.shopping-item-toggle', function(event) {
+  let itemName = $(this).parent().siblings().text(); 
+  checkItem(stateObj, itemName);
+  render(stateObj, $('.shopping-list'));
+});
+
+$('.shopping-list').on('click', '.shopping-item-delete', function(event) {
+  let itemName = $(this).parent().siblings().text();
+  deleteItem(stateObj, itemName);
+  render(stateObj, $('.shopping-list'));
+});
+
+
