@@ -11,43 +11,62 @@ const stateObj = {
 
 //Need to add item
 function addItem(state, item) {
-  return state.items.push({title: item, checked: false});
+  state.items.push({title: item, checked: false});
 }
 
 //check item off
-function checkItem(state, item) {
-  for(let i = 0; i < state.items.length; i++) {
-    if(state.items[i].title === item && state.items.i.checked) {
-      return state.items[i].checked = false;
-    } else {
-      return state.items[i].checked = true;
+
+function checkItem(state,item){
+  state.items.forEach(obj => {
+    if (obj.title === item && obj.checked === true){
+      obj.checked = false;
     }
-  }
+    else if(obj.title === item && obj.checked === false){
+      obj.checked = true;
+    }
+  });
 }
 
 //delete item
-function deleteItem(state, item) {
-  //loop through items array
-  //find the object where title value is the item we are looking for
-  //delete that object from the array
-    //use splice? 
-        //If so, need index of where to start splicing
-        //indexOf that object item 
 
-  for(let i = 0; i < state.items.length; i++) {
-      if(state.items[i].title === item) {
-          return state.items.splice(state.items.indexOf(state.items[i].title === item), 1);
-      } 
-  }
-
- arr = state.items 
- arr = ['cat', 'dog', 'hamster'];
- //arr.indexOf('cat') => 0
- //state.items.indexOf
- //splice(1,1)
+function deleteItem (state, item){
+  state.items.forEach(obj => {
+    if (obj.title == item){
+      let i = state.items.indexOf(obj);
+      state.items.splice(i, 1);
+    }
+  });
 }
 
 
 // 3. State rendering functions. Write some code that renders your state into a DOM element. The function will take in the state object and the element you want to update, then it will format your user input, and push it onto the dom element.
+
+function render (state, element){
+  let itemsHtml = ``;
+  state.items.forEach(obj => {
+    // if (obj.checked === true){
+    //   let css = 'shopping-item shopping-item__checked';
+    // }
+    // else if (obj.checked === false){
+    //   let css = 'shopping-item';
+    // }
+    itemsHtml += `
+      <li>
+        <span class="CLASS HERE">${obj.title}</span>
+        <div class="shopping-item-controls">
+          <button class="shopping-item-toggle">
+            <span class="button-label">check</span>
+          </button>
+          <button class="shopping-item-delete">
+            <span class="button-label">delete</span>
+          </button>
+        </div>
+      </li>
+    `
+  });
+}
+
+render (stateObj);
+console.log(itemsHtml);
 
 // 4. Event listeners. This is where the magic happens. based on whatever user interaction you're expecting, call on your modification function with their input, then call on your rendering function with the elemnt you want to update.
