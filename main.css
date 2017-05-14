@@ -49,3 +49,27 @@ button:hover {
 .hidden {
   display:none;
 }
+
+.hiddenItems {
+  margin-top:20px;
+  margin-bottom: 20px;
+  border: 1px solid grey;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  font-size: 14px;
+  font-style:italic;
+  text-align:center;
+}
+
+.hiddenCount{
+  color:gray;
+}
+
+.show {
+  margin-left: 10px;
+}
+
+.hide{
+  float:right;
+  top:10px;
+}

@@ -1,19 +1,35 @@
-// 1. Design a state object. This is an object that will store the data that will eventually make its way to your application
+/////////////STATE OBJECTS////////////////
 
 const stateObj = {
   items: []
 };
 
-// 2. State modification Functions. Write some code that will modify your state object. Don't hard-code in any event listeners or specific data, just create a generic function that takes in the state object and a piece of data as arguments, and modifies the state with that piece of data.
 
-//Need to add item
-function addItem(state, item) {
-  validate(state, item);
-  state.items.push({title: item, checked: false});
+
+/////////////STATE MODS////////////////
+
+//ADD ITEM STATE MOD
+function addItem(state, item){
+  let hasDuplicates = false;
+  state.items.forEach(obj => {
+    if (obj.title === item){
+      hasDuplicates = true;
+    }
+  });
+  try{
+    if(hasDuplicates){
+      throw new Error(`${item} is already on your list!`);
+    }
+    else{
+      state.items.push({title: item, checked: false, hidden:false});
+    }
+  }
+  catch(e){
+    alert(e.message);
+  }
 }
 
-//check item off
-
+//CHECK ITEM STATE MOD
 function checkItem(state,item){
   state.items.forEach(obj => {
     if (obj.title === item && obj.checked === true){
@@ -23,10 +39,10 @@ function checkItem(state,item){
       obj.checked = true;
     }
   });
+
 }
 
-//delete item
-
+//DELETE ITEM STATE MOD
 function deleteItem (state, item){
   state.items.forEach(obj => {
     if (obj.title == item){
@@ -36,38 +52,74 @@ function deleteItem (state, item){
   });
 }
 
+//EDIT ITEM STATE MOD
 function editItem(state, prevItem, newItem){
-  validate(state, item);
+  let hasDuplicates = false;
   state.items.forEach(obj => {
-    if (obj.title === prevItem){
-      obj.title = newItem;
+    if (obj.title === newItem){
+      hasDuplicates = true;
+    }
+  });
+  try{
+      if(hasDuplicates){
+        throw new Error(`${newItem} is already on your list!`);
+      }
+      else{
+        state.items.forEach(obj => {
+          if (obj.title === prevItem){
+            obj.title = newItem;
+          }
+        });
+      }
+  }
+  catch(e){
+    alert(e.message);
+  }
+
+}
+
+//HIDE ITEM STATE MOD
+function hideItem(state, item){
+  state.items.forEach(obj => {
+    if (obj.title == item){
+      obj.hidden = true
     }
   });
 }
 
-function validate(state, item){
+//SHOW ITEMS STATE MOD
+function showItems(state){
   state.items.forEach(obj => {
-    if (obj.title === item){
-      alert(`${item} is already on your list!`);
-      return
+    if (obj.hidden === true){
+      obj.hidden = false;
     }
   });
 }
 
-// 3. State rendering functions. Write some code that renders your state into a DOM element. The function will take in the state object and the element you want to update, then it will format your user input, and push it onto the dom element.
+/////////////RENDERING////////////////
+function render (state, list, hiddenBanner){
 
-function render (state, element){
+  //MAIN RENDER
+
   let itemsHtml = ``;
   state.items.forEach(obj => {
     let css = '';
+    let showHidden = '';
+    let hideItem = ''
     if (obj.checked === true){
       css = 'shopping-item shopping-item__checked';
+      showHidden = 'hide';
     }
     else if (obj.checked === false){
       css = 'shopping-item';
+      showHidden = 'hide hidden';
+    }
+    if(obj.hidden === true){
+      hideItem = 'hidden'
     }
     itemsHtml += `
-      <li>
+      <li class= "${hideItem}">
+        <a href="" class="${showHidden}">hide</a>
         <span class="${css} js-title">${obj.title}</span>
         <form class="hidden js-editItem">
           <input type="text" name="Edit Name" class="js-input-edit-item" placeholder="New item name here">
@@ -86,36 +138,61 @@ function render (state, element){
       </li>
     `
   });
-//   console.log(itemsHtml);
-  element.html(itemsHtml);
+  list.html(itemsHtml);
+
+  //HIDDEN ITEM BANNER RENDER
+  let hiddenCount = 0;
+  let grammar = 'items'
+  state.items.forEach(obj => {
+    if (obj.hidden === true){
+      hiddenCount++
+    }
+  });
+  if (hiddenCount > 1){
+    hiddenBanner.removeClass('hidden');
+    hiddenBanner.html(`<span class="hiddenCount">You have ${hiddenCount} hidden ${grammar}</span> <a href="" class="show">show</a>`);
+  }
+  else if(hiddenCount === 1){
+    grammar = 'item';
+    hiddenBanner.removeClass('hidden');
+    hiddenBanner.html(`<span class="hiddenCount">You have ${hiddenCount} hidden ${grammar}</span> <a href="" class="show">show</a>`);
+  }
+  else if(hiddenCount === 0){
+    hiddenBanner.addClass('hidden');
+  }
+
 }
 
+/////////////LISTENERS////////////////
 
-// 4. Event listeners. This is where the magic happens. based on whatever user interaction you're expecting, call on your modification function with their input, then call on your rendering function with the elemnt you want to update.
-
+//ADD ITEM LISTENER
 $("#js-shopping-list-form").submit(function(event) {
   event.preventDefault();
   addItem(stateObj, $('#shopping-list-entry').val());
-  render(stateObj, $('.shopping-list'));
+  render(stateObj, $('.shopping-list'), $('.hiddenItems'));
   $('#shopping-list-entry').val("");
 });
 
+
+//CHECK ITEM LISTENER
 $('.shopping-list').on('click', '.shopping-item-toggle', function(event) {
   let itemName = $(this).closest('li').find('.js-title').text(); 
   checkItem(stateObj, itemName);
-  render(stateObj, $('.shopping-list'));
+  render(stateObj, $('.shopping-list'), $('.hiddenItems'));
 });
 
+//DELETE ITEM LISTENER
 $('.shopping-list').on('click', '.shopping-item-delete', function(event) {
   let itemName = $(this).closest('li').find('.js-title').text();
   deleteItem(stateObj, itemName);
-  render(stateObj, $('.shopping-list'));
+  render(stateObj, $('.shopping-list'), $('.hiddenItems'));
 });
 
-// SHOW THE EDIT FIELD
+// SHOW & FOCUS THE EDIT FIELD
 $('.shopping-list').on('click', '.shopping-item', function(event){
   $(this).addClass('hidden');
   $(this).siblings().removeClass('hidden');
+  $(this).siblings().find('.js-input-edit-item').focus();
 })
 
 // SUBMIT THE EDIT
@@ -126,7 +203,23 @@ $('.shopping-list').on('submit', '.js-editItem', function(event){
   // console.log($(this).find('input').val());
   editItem(stateObj, prevItem, newItem);
   // console.log(stateObj);
-  render(stateObj, $('.shopping-list'));
+  render(stateObj, $('.shopping-list'), $('.hiddenItems'));
 });
 
+//HIDE LISTENER
+$('.shopping-list').on('click', '.hide', function(event){
+  event.preventDefault();
+  let itemName = $(this).closest('li').find('.js-title').text();
+  hideItem(stateObj, itemName);
+  render(stateObj, $('.shopping-list'), $('.hiddenItems'));
+});
+
+//SHOW LISTENER
+$('.hiddenItems').on('click', '.show', function(event){
+  event.preventDefault();
+  showItems(stateObj);
+  render(stateObj, $('.shopping-list'), $('.hiddenItems'));
+});
+
+//
 
