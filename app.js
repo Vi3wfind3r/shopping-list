@@ -21,7 +21,7 @@ function addItem(state, item){
       throw new Error(`${item} is already on your list!`);
     }
     else{
-      state.items.push({title: item, checked: false, hidden:false});
+      state.items.push({title: item, checked: false, hidden:false, filtered:false});
     }
   }
   catch(e){
@@ -93,6 +93,18 @@ function showItems(state){
     if (obj.hidden === true){
       obj.hidden = false;
     }
+    if(obj.filtered === true){
+      obj.filtered = false;
+    }
+  });
+}
+
+//FILTER ITEMS STATE MOD
+function filterItems(state, item){
+  state.items.forEach(obj => {
+    if (obj.title !== item){
+      obj.filtered = true
+    }
   });
 }
 
@@ -114,7 +126,7 @@ function render (state, list, hiddenBanner){
       css = 'shopping-item';
       showHidden = 'hide hidden';
     }
-    if(obj.hidden === true){
+    if(obj.hidden === true || obj.filtered === true){
       hideItem = 'hidden'
     }
     itemsHtml += `
@@ -142,9 +154,10 @@ function render (state, list, hiddenBanner){
 
   //HIDDEN ITEM BANNER RENDER
   let hiddenCount = 0;
+  let filteredCount = 0;
   let grammar = 'items'
   state.items.forEach(obj => {
-    if (obj.hidden === true){
+    if (obj.hidden === true || obj.filtered === true){
       hiddenCount++
     }
   });
@@ -161,6 +174,26 @@ function render (state, list, hiddenBanner){
     hiddenBanner.addClass('hidden');
   }
 
+  //FILTER FAIL CATCH
+  state.items.forEach(obj => {
+    if(obj.filtered === true){
+      filteredCount++
+    }
+  });
+  try{
+    if(filteredCount >= state.items.length){
+      throw new Error(`Nothing matched your filter. Please try again.`);
+    }
+  }
+  catch(e){
+    alert(e.message);
+    state.items.forEach(obj => {
+      obj.filtered = false;
+      render(stateObj, $('.shopping-list'), $('.hiddenItems'));
+
+    });
+  }
+  
 }
 
 /////////////LISTENERS////////////////
@@ -171,6 +204,15 @@ $("#js-shopping-list-form").submit(function(event) {
   addItem(stateObj, $('#shopping-list-entry').val());
   render(stateObj, $('.shopping-list'), $('.hiddenItems'));
   $('#shopping-list-entry').val("");
+});
+
+//FILTER LISTENER
+$('#js-shopping-list-find').submit(function(event){
+  event.preventDefault();
+  let itemName = $('#shopping-list-search').val();
+  filterItems(stateObj, itemName);
+  render(stateObj, $('.shopping-list'), $('.hiddenItems'));
+  $('#shopping-list-search').val("")
 });
 
 
@@ -219,7 +261,6 @@ $('.hiddenItems').on('click', '.show', function(event){
   event.preventDefault();
   showItems(stateObj);
   render(stateObj, $('.shopping-list'), $('.hiddenItems'));
+  $('#shopping-list-search').val("");
 });
-
-//
 
